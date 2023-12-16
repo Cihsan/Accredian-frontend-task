@@ -11,26 +11,37 @@ import {
 } from "@mui/material";
 import React from "react";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 const defaultTheme = createTheme();
 const Login = () => {
+  const navigate = useNavigate();
   const {
-    control,
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm();
   const onLogin = data => {
-    // Perform sign-up logic here
-    console.log("Signing up with:", data.email, data.password);
+
+    fetch("http://localhost:5000/login", {
+      method: "POST",
+      body: JSON.stringify({
+        username: data.emailOrUsername,
+        email: data.emailOrUsername,
+        password: data.password,
+      }),
+      headers: {
+        "Content-type": "application/json; charset=UTF-8",
+      },
+    })
+      .then(response => response.json())
+      .then(json => {
+        console.log(json);
+        reset();
+        navigate("/dashboard",);
+      });
   };
-  //   const handleLogin = event => {
-  //     event.preventDefault();
-  //     const data = new FormData(event.currentTarget);
-  //     console.log({
-  //       email: data.get("email"),
-  //       password: data.get("password"),
-  //     });
-  //   };
+
   return (
     <>
       <ThemeProvider theme={defaultTheme}>
@@ -45,7 +56,7 @@ const Login = () => {
             height: "100vh",
           }}
         >
-          <Paper sx={{ padding: 3, marginTop:3, marginBottom:2}}>
+          <Paper sx={{ padding: 3, marginTop: 3, marginBottom: 2 }}>
             <Typography component="h1" variant="h5">
               Login
             </Typography>
@@ -54,21 +65,15 @@ const Login = () => {
               noValidate
               sx={{ mt: 1 }}
               onSubmit={handleSubmit(onLogin)}
-              //   onSubmit={handleLogin}
             >
               <TextField
-              control={control}
-              defaultValue=""
+                defaultValue=""
                 margin="normal"
                 fullWidth
-                id="email"
                 label="Username or Email"
                 autoComplete="email"
                 autoFocus
-                {...register("email", { required: true })}
-                // rules={{ required: 'Username is required', minLength: { value: 4, message: 'Username must be at least 4 characters' } }}
-                // name="email"
-                // required
+                {...register("emailOrUsername", { required: true })}
               />
               <p>{errors.email?.message}</p>
               <TextField
@@ -76,19 +81,9 @@ const Login = () => {
                 fullWidth
                 label="Password"
                 type="password"
-                autoComplete="current-password"
-                {
-                  ...register("password", {
-                    required: true,
-                    minLength: 6,
-                    maxLength: 50,
-                  })
-                  // required
-                  // name="password"
-                  // id="password"
-                }
+                autoComplete="password"
+                {...register("password", { required: true })}
               />
-              <p>{errors.password?.message}</p>
               <Button
                 type="submit"
                 fullWidth
